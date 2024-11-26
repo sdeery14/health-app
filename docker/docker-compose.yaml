@@ -1,0 +1,86 @@
+services:
+  postgres:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile.postgres
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      FLASK_DB: ${FLASK_DB}
+      FLASK_USER: ${FLASK_USER}
+      FLASK_PASSWORD: ${FLASK_PASSWORD}
+      AIRFLOW_DB: ${AIRFLOW_DB}
+      AIRFLOW_USER: ${AIRFLOW_USER}
+      AIRFLOW_PASSWORD: ${AIRFLOW_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    ports:
+      - "5432:5432"
+
+  flask:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.flask
+    container_name: flask
+    environment:
+      FLASK_ENV: development
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+    volumes:
+      - ./flask_app:/app
+    ports:
+      - "5000:5000"
+    networks:
+      - backend
+    depends_on:
+      - postgres
+
+  airflow-webserver:
+    build:
+      context: ../airflow_app
+      dockerfile: ./Dockerfile.airflow
+    container_name: airflow-webserver
+    environment:
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://${AIRFLOW_USER}:${AIRFLOW_PASSWORD}@postgres:5432/${AIRFLOW_DB}"
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__WEBSERVER__WORKERS: "2"
+      AIRFLOW_UID: "50000"
+    volumes:
+      - ./airflow_app/dags:/opt/airflow/dags
+      - ./airflow_app/plugins:/opt/airflow/plugins
+      - airflow_data:/opt/airflow/logs
+    ports:
+      - "8080:8080"
+    networks:
+      - backend
+    depends_on:
+      - postgres
+
+  airflow-scheduler:
+    build:
+      context: ../airflow_app
+      dockerfile: ./Dockerfile.airflow
+    container_name: airflow-scheduler
+    environment:
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+      AIRFLOW_UID: "50000"
+    volumes:
+      - ./airflow_app/dags:/opt/airflow/dags
+      - ./airflow_app/plugins:/opt/airflow/plugins
+      - airflow_data:/opt/airflow/logs
+    networks:
+      - backend
+    depends_on:
+      - postgres
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  airflow_data:
+

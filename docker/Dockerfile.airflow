@@ -1,0 +1,30 @@
+# Use the official Apache Airflow image from Docker Hub
+FROM apache/airflow:2.10.2
+
+# Set the working directory inside the container
+WORKDIR /opt/airflow
+
+# Copy the Poetry files and project dependencies to the working directory
+COPY pyproject.toml poetry.lock ./
+
+# Install Poetry and dependencies
+RUN pip install poetry && poetry install --no-root
+
+# Copy the rest of the Airflow DAGs and files to the working directory
+COPY . .
+
+# Switch to the root user to adjust permissions
+USER root
+
+# Copy the entrypoint script to the container and set it to be executable
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Switch back to airflow user
+USER airflow
+
+# Expose the port for the Airflow webserver
+EXPOSE 8080
+
+# Default command for the container - this can be adjusted by the docker-compose file
+CMD ["poetry", "run", "airflow", "scheduler"]
