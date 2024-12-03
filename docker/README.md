@@ -51,9 +51,14 @@ Run the following command to start the Flask service:
 docker-compose up -d flask
 ```
 
-To get into the Flask container, run:
+Access the Flask container:
 ```sh
 docker exec -it flask /bin/sh
+```
+
+Open the Poetry shell from within the Flask container:
+```sh
+poetry shell
 ```
 
 If you need to initialize the database, run the following command inside the Flask container:
@@ -61,7 +66,7 @@ If you need to initialize the database, run the following command inside the Fla
 flask db init
 ```
 
-Once inside the container, run the following commands to perform the database migration and upgrade:
+Perform the database migration and upgrade:
 ```sh
 flask db migrate
 flask db upgrade
