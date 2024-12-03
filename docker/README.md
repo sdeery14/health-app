@@ -51,6 +51,23 @@ Run the following command to start the Flask service:
 docker-compose up -d flask
 ```
 
+To get into the Flask container, run:
+```sh
+docker exec -it flask /bin/sh
+```
+
+If you need to initialize the database, run the following command inside the Flask container:
+```sh
+flask db init
+```
+
+Once inside the container, run the following commands to perform the database migration and upgrade:
+```sh
+flask db migrate
+flask db upgrade
+```
+
+
 ### Airflow
 
 1. Ensure the PostgreSQL service is running.

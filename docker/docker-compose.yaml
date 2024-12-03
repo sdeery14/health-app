@@ -28,7 +28,7 @@ services:
     container_name: flask
     environment:
       FLASK_ENV: development
-      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+      DATABASE_URL: "postgresql://${FLASK_USER}:${FLASK_PASSWORD}@postgres:5432/${FLASK_DB}"
     volumes:
       - ../flask_app:/app
     ports:
